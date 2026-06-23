@@ -22,6 +22,8 @@ const ArticlePage = () => {
     );
   }
 
+  const normalizedContent = article.content?.replace(/(&nbsp;|\u00A0)/g, ' ') || article.content;
+
   return (
     <article className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
       {article.coverImage && (
@@ -52,8 +54,8 @@ const ArticlePage = () => {
 
   
         <div 
-          className="prose prose-lg max-w-none text-gray-800 break-words hyphens-auto"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          className="prose prose-lg max-w-none text-gray-800 break-words hyphens-none text-justify"
+          dangerouslySetInnerHTML={{ __html: normalizedContent }}
         />
 
   
@@ -64,7 +66,7 @@ const ArticlePage = () => {
               {article.tags.map(tag => (
                 <Link 
                   key={tag._id} 
-                  to={`/?search=${tag.name}`} 
+                  to={`/?tag=${tag._id}`} 
                   className="bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition"
                 >
                   #{tag.name}

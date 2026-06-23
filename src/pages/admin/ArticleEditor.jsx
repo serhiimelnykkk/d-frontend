@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { createArticle, fetchCategories, fetchTags, updateArticle } from '../../api/content';
+import { createArticle, fetchArticleById, fetchCategories, fetchTags, updateArticle } from '../../api/content';
 
 const ArticleEditor = () => {
   const { id } = useParams();
@@ -21,9 +21,30 @@ const ArticleEditor = () => {
     content: initialData.content || '',
     coverImage: initialData.coverImage || '',
     category: initialData.category?._id || '',
-    tags: initialData.tags?.map(t => t._id) || [],
+    tags: initialData.tags?.filter(t => t)?.map(t => t._id) || [],
     status: initialData.status || 'draft',
   });
+
+  const { data: fetchedArticle } = useQuery({
+    queryKey: ['article', id],
+    queryFn: () => fetchArticleById(id),
+    enabled: isEditMode && !location.state?.article,
+  });
+
+  useEffect(() => {
+    if (fetchedArticle) {
+      setFormData({
+        title: fetchedArticle.title || '',
+        slug: fetchedArticle.slug || '',
+        excerpt: fetchedArticle.excerpt || '',
+        content: fetchedArticle.content || '',
+        coverImage: fetchedArticle.coverImage || '',
+        category: fetchedArticle.category?._id || '',
+        tags: fetchedArticle.tags?.filter(t => t)?.map(t => t._id) || [],
+        status: fetchedArticle.status || 'draft',
+      });
+    }
+  }, [fetchedArticle]);
 
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: fetchCategories });
   const { data: tags } = useQuery({ queryKey: ['tags'], queryFn: fetchTags });

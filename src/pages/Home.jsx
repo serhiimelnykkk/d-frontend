@@ -8,13 +8,14 @@ const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1');
   const categoryId = searchParams.get('category') || '';
+  const tagId = searchParams.get('tag') || '';
   const search = searchParams.get('search') || '';
 
   const [searchInput, setSearchInput] = useState(search);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['articles', page, categoryId, search],
-    queryFn: () => fetchArticles({ page, limit: 9, category: categoryId, search }),
+    queryKey: ['articles', page, categoryId, tagId, search],
+    queryFn: () => fetchArticles({ page, limit: 9, category: categoryId, tag: tagId, search }),
     keepPreviousData: true,
   });
 
@@ -25,19 +26,18 @@ const Home = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setSearchParams({ search: searchInput, category: categoryId, page: 1 });
+    setSearchParams({ search: searchInput, category: categoryId, tag: '', page: 1 });
   };
 
   const handleCategoryChange = (catId) => {
-    setSearchParams({ category: catId, search: '', page: 1 });
+    setSearchParams({ category: catId, search: '', tag: '', page: 1 });
     setSearchInput('');
   };
 
   const handlePageChange = (newPage) => {
-    setSearchParams({ page: newPage, category: categoryId, search });
+    setSearchParams({ page: newPage, category: categoryId, tag: tagId, search });
     window.scrollTo(0, 0);
   };
-
   return (
     <div>
       <div className="bg-white p-4 rounded-lg shadow-sm mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -50,7 +50,7 @@ const Home = () => {
           >
             Всі новини
           </button>
-          {categories?.map((cat) => (
+          {categories && categories.map((cat) => (
             <button
               key={cat._id}
               onClick={() => handleCategoryChange(cat._id)}
@@ -86,7 +86,7 @@ const Home = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {data?.articles.map((article) => (
+            {data?.articles?.map((article) => (
               <ArticleCard key={article._id} article={article} />
             ))}
           </div>
